@@ -38,6 +38,9 @@ class AIEditPage(BasePage):
         By.XPATH,
         "//div[contains(@class,'list-item')]//div[@class='title' and text()='Victory round - 2x']"
     )
+    DELETE_OPTION = (By.XPATH, "//a[starts-with(@id, 'delete-') and text()='Delete']")
+    DELETE_CONFIRM_BUTTON = (By.XPATH, "//button[contains(@class, 'swal2-confirm') and text()='Yes']")
+    DELETE_SUCCESS_CONTINUE_BUTTON = (By.XPATH, "//button[contains(@class, 'swal2-confirm') and text()='Continue']")
 
     def accept_cookie_popup_if_present(self):
         try:
@@ -168,4 +171,60 @@ class AIEditPage(BasePage):
             return True
         except Exception as e:
             print(f"❌ 'Victory round - 2x' result not found: {e}")
+            return False
+
+
+    def click_more_options_for_clip(self, title_text="Victory round - 2x"):
+        print(f"🔍 Looking for clip card with title '{title_text}'...")
+        try:
+            containers = self.driver.find_elements(By.CLASS_NAME, "list-item")
+            for container in containers:
+                title_element = container.find_element(By.CLASS_NAME, "title")
+                if title_text in title_element.text:
+                    print("✅ Found matching clip container.")
+                    try:
+                        more_btn = container.find_element(By.XPATH, ".//button[contains(@class, 'btn-link') and .//i[contains(@class, 'nic-more-tools')]]")
+                        self.driver.execute_script("arguments[0].scrollIntoView(true);", more_btn)
+                        time.sleep(0.5)
+                        self.wait.until(EC.element_to_be_clickable((By.XPATH, ".//button[contains(@class, 'btn-link') and .//i[contains(@class, 'nic-more-tools')]]")))
+                        more_btn.click()
+                        print("✅ Clicked 3-dot 'more options' button.")
+                        return
+                    except Exception as click_error:
+                        print(f"❌ Could not click 3-dot menu: {click_error}")
+            print(f"❌ No matching clip container with title: {title_text}")
+        except Exception as e:
+            print(f"❌ Exception while searching for clip containers: {e}")
+
+    def is_delete_option_visible(self):
+        try:
+            self.wait.until(EC.visibility_of_element_located(self.DELETE_OPTION))
+            return True
+        except:
+            return False
+
+    def click_delete_option(self):
+        try:
+            delete_btn = self.wait.until(EC.element_to_be_clickable(self.DELETE_OPTION))
+            delete_btn.click()
+            print("🗑️ Clicked 'Delete' option.")
+        except Exception as e:
+            print(f"❌ Failed to click 'Delete' option: {e}")
+
+    def confirm_delete_clip(self):
+        try:
+            confirm_btn = self.wait.until(EC.element_to_be_clickable(self.DELETE_CONFIRM_BUTTON))
+            confirm_btn.click()
+            print("✅ Clicked 'Yes' to confirm deletion.")
+        except Exception as e:
+            print(f"❌ Failed to confirm deletion: {e}")
+
+    def is_clip_deleted_successfully(self):
+        try:
+            continue_btn = self.wait.until(EC.element_to_be_clickable(self.DELETE_SUCCESS_CONTINUE_BUTTON))
+            continue_btn.click()
+            print("✅ Clicked 'Continue' after successful deletion.")
+            return True
+        except Exception as e:
+            print(f"❌ Clip deletion success message not handled: {e}")
             return False

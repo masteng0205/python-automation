@@ -46,7 +46,6 @@ def test_open_ai_edit_page():
         print("Page title:", driver.title)
         print("Current URL:", driver.current_url)
         print("Page heading:", driver.find_element(By.TAG_NAME, "h2").text)
-        driver.save_screenshot("ai_edit_debug_before_click.png")
 
         # Click 'Create AI Edit' button
         ai_edit.click_create_ai_edit()
@@ -86,6 +85,17 @@ def test_open_ai_edit_page():
 
         # Assert the title is same what we choose
         assert ai_edit.is_victory_result_visible(), "❌ 'Victory round - 2x' result not visible in the list"
+
+        ai_edit.click_more_options_for_clip("Victory round - 2x")
+        print("✅ Successfully clicked 3-dot menu for the clip.")
+
+        assert ai_edit.is_delete_option_visible(), "❌ Delete option not visible after clicking 3-dot menu."
+        print("✅ Delete option is visible.")
+
+        ai_edit.click_delete_option()
+        ai_edit.confirm_delete_clip()
+        assert ai_edit.is_clip_deleted_successfully()
+        print("🧹 Clip deleted successfully and confirmed with 'Continue'.")
 
     finally:
         # input("⏸️ Test finished — press Enter to close the browser manually...")
